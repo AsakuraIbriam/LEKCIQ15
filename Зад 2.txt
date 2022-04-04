@@ -1,0 +1,182 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+
+
+
+
+#define COUNT 3
+
+typedef struct {
+    char title[150];
+    char author[100];
+    int pages;
+    float price;
+}Book;
+
+
+typedef struct node{
+    Book item;
+    struct node *next;
+}sll_node;
+
+
+void pushElement(sll_node **head, Book item) {
+   sll_node *temp =  malloc(sizeof(sll_node));
+   temp->item = item;
+   temp->next = *head;
+   *head = temp;
+}
+
+void popElement(sll_node **head) {
+    if(*head == NULL) {
+        return;
+    }
+    sll_node *temp = *head;
+    *head = (*head)->next;
+    free(temp);
+
+}
+
+void printElements(sll_node *head) {
+
+    sll_node *temp = head;
+
+    while(temp) {
+        printf("Title: %s\n", temp->item.title);
+        printf("Author name: %s\n", temp->item.author);
+        printf("Pages: %d\n", temp->item.pages);
+        printf("Price: %.2f\n", temp->item.price);
+        printf("\n");
+        temp = temp->next;
+    }
+
+
+}
+
+void freeList(sll_node **head){
+
+    sll_node *current = *head;
+
+    while(current != NULL) {
+        sll_node *temp = current;
+        current = current->next;
+        free(temp);
+    }
+    *head = NULL;
+
+}
+
+
+void frontBackSplit(sll_node* list, sll_node** front, sll_node** back){
+    sll_node* slow = list;
+    sll_node* fast = list->next;
+    while (fast != NULL){
+        fast = fast->next;
+        if (fast  != NULL){
+            slow = slow->next;
+            fast = fast->next;
+        }
+    }
+    *front = list;
+    *back = slow->next;
+    slow->next = NULL;
+}
+
+
+
+int compareAsc(const Book p1, const Book p2) {
+
+    char c1 = p1.title[0];
+    char c2 = p2.title[0];
+    if(c1 == c2) {
+        return 0;
+    } else if(c1 > c2) {
+        return 1;
+    } else {
+        return -1;
+    }
+
+}
+
+sll_node* sortedMerge(sll_node* listA, sll_node* listB, int(*cmp)(Book, Book)){
+    sll_node* sorted = NULL;
+    if (listA == NULL){
+        return listB;
+    }
+    if (listB == NULL){
+        return listA;
+    }
+    if (compareAsc(listA->item, listB->item) > 0){
+        sorted = listA;
+        sorted->next = sortedMerge(listA->next, listB, cmp);
+    } else {
+        sorted = listB;
+        sorted->next = sortedMerge(listA, listB->next, cmp);
+    }
+    return sorted;
+}
+
+
+void mergeSort(sll_node** list, int(*cmp)(Book, Book)){
+    if (*list == NULL || (*list)->next == NULL){
+        return;
+    }
+    sll_node *front = NULL, *back = NULL;
+    frontBackSplit(*list, &front, &back);
+    mergeSort(&front, cmp);
+    mergeSort(&back, cmp);
+    *list = sortedMerge(front, back, cmp);
+} 
+
+
+Book getNth(sll_node* head, size_t n){
+    sll_node* current = head;
+    while (n--){
+        current = current->next;
+    }
+    return current->item;
+}
+int main(int argc, char *argv[])
+{
+
+
+
+
+        if(argc != 3) {
+            printf("Invalid number of arguments\n");
+            exit(1);
+	}
+        
+
+        sll_node *head = NULL;
+        FILE *fp = fopen(argv[1], "rb");
+
+        for(int i = 0; i < COUNT; i++) {
+            Book b;
+            fread(&b, sizeof(Book), 1, fp);
+            pushElement(&head, b);
+        }
+        
+        mergeSort(&head, compareAsc);
+        
+        FILE *fd = fopen(argv[2], "wb");
+        
+        for(int i = 0; i < COUNT; i++) {
+            Book b;
+            b = getNth(head, i);
+            fwrite(&b, sizeof(Book), 1, fd);
+        }
+        
+        
+
+
+
+        fclose(fd);
+        fclose(fp);
+
+
+return 0;
+  }

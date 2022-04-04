@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+
+
+
+
+#define COUNT 3
+
+typedef struct {
+    char title[150];
+    char author[100];
+    int pages;
+    float price;
+}Book;
+
+
+
+int main(int argc, char *argv[])
+{
+srand(time(NULL));
+
+
+
+        if(argc != 2) {
+            printf("Invalid number of arguments");
+            exit(1);
+
+        }
+
+        Book books[COUNT];
+
+        const char names[][100] = {"Djodji Bodji", "Dodo Bodo", "Momo Mani", "Dudi Frudi",
+                                "Fifi Jifi", "Susi Pussi", "Poki Doki", "Djidji Bidji", "Loko Doko", "Bebi Debi"};
+        const char titles[][100] = {
+            "Cloudy with a Chance of Meatballs",
+            "Pride and Prejudice and Zombies",
+            "The House of Mirth ",
+            "Are You There, Vodka?",
+            "And Then There Were None",
+            "Their Eyes Were Watching God",
+            "The Devil Wears Prada ",
+            "Brave New World by Aldous Huxley",
+            "Bury My Heart at Wounded Knee",
+            "The Man Who Was Thursday"
+        };
+
+        const int pages[10] ={300, 200, 500, 870, 1354, 1982, 1123, 565, 837, 1553};
+        const float price[10] = {6.53, 85.34, 99.80, 230.1, 694, 995, 877, 112, 450, 999.99};
+
+        for(int i = 0; i < COUNT; i++) {
+            strcpy(books[i].author, names[rand()%10]);
+            strcpy(books[i].title, titles[rand()%10]);
+            books[i].pages = pages[rand()%10];
+            books[i].price = price[rand()%10];
+        }
+
+        FILE *fp = fopen(argv[1], "wb");
+
+        
+        fwrite(books, sizeof(Book), COUNT, fp);
+        
+        
+        fclose(fp);
+
+
+return 0;
+  }
